@@ -3,9 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="援想琴電子琴彈奏系統 - 線上彈奏電子琴，支援多鍵、觸控滑音、音色選擇、錄音與MIDI">
-    <title>援想琴電子琴彈奏系統</title>
+    <meta name="description" content="援想琴電子琴神彈奏系統 - 線上彈奏電子琴，支援多鍵、觸控滑音、音色選擇、錄音與MIDI">
+    <title>援想琴電子琴神彈奏系統</title>
     <style>
+        :root {
+            --primary-color: #0288d1;
+            --secondary-color: #81d4fa;
+            --background-start: #e0f7fa;
+            --background-end: #b2ebf2;
+            --key-white: #fff;
+            --key-black: #222;
+            --text-color: #333;
+        }
+
+        /* 賽博龐克（預設） */
+        body.cyberpunk {
+            --primary-color: #00ffcc;
+            --secondary-color: #ff00cc;
+            --background-start: #0d1b2a;
+            --background-end: #1b263b;
+            --key-white: #e0e1dd;
+            --key-black: #415a77;
+            --text-color: #00ffcc;
+            background: linear-gradient(135deg, var(--background-start), var(--background-end));
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* 經典復古 */
+        body.classic-retro {
+            --primary-color: #8b4513;
+            --secondary-color: #d4a017;
+            --background-start: #f5deb3;
+            --background-end: #deb887;
+            --key-white: #f0e68c;
+            --key-black: #5c4033;
+            --text-color: #5c4033;
+            background: linear-gradient(135deg, var(--background-start), var(--background-end));
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        /* 現代黑白 */
+        body.modern-mono {
+            --primary-color: #333333;
+            --secondary-color: #666666;
+            --background-start: #ffffff;
+            --background-end: #cccccc;
+            --key-white: #ffffff;
+            --key-black: #333333;
+            --text-color: #333333;
+            background: linear-gradient(135deg, var(--background-start), var(--background-end));
+            font-family: 'Roboto', sans-serif;
+        }
+
+        /* 明亮橙黃 */
+        body.bright-orange {
+            --primary-color: #ff8c00;
+            --secondary-color: #ffa500;
+            --background-start: #ffffe0;
+            --background-end: #ffd700;
+            --key-white: #fffacd;
+            --key-black: #ff4500;
+            --text-color: #ff4500;
+            background: linear-gradient(135deg, var(--background-start), var(--background-end));
+            font-family: 'Arial', sans-serif;
+        }
+
+        /* 田園森林 */
+        body.pastoral-forest {
+            --primary-color: #228b22;
+            --secondary-color: #32cd32;
+            --background-start: #e6f3e6;
+            --background-end: #98fb98;
+            --key-white: #f0fff0;
+            --key-black: #006400;
+            --text-color: #006400;
+            background: linear-gradient(135deg, var(--background-start), var(--background-end));
+            font-family: 'Georgia', serif;
+        }
+
+        /* 彩虹漸層 */
+        body.rainbow-gradient {
+            --primary-color: #ff0000;
+            --secondary-color: #00ff00;
+            --background-start: #ff00ff;
+            --background-end: #00ffff;
+            --key-white: #ffffff;
+            --key-black: #000000;
+            --text-color: #ff00ff;
+            background: linear-gradient(135deg, #ff0000, #ff00ff, #00ff00, #00ffff);
+            font-family: 'Comic Sans MS', cursive;
+        }
+
+        /* 粉紅泡泡 */
+        body.pink-bubble {
+            --primary-color: #ff69b4;
+            --secondary-color: #ffb6c1;
+            --background-start: #ffe4e1;
+            --background-end: #ffc1cc;
+            --key-white: #fff0f5;
+            --key-black: #ff1493;
+            --text-color: #ff1493;
+            background: linear-gradient(135deg, var(--background-start), var(--background-end));
+            font-family: 'Courier New', monospace;
+        }
+
         body {
             display: flex;
             flex-direction: column;
@@ -13,142 +114,204 @@
             justify-content: center;
             min-height: 100vh;
             margin: 0;
-            background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+            background: linear-gradient(135deg, var(--background-start), var(--background-end));
             font-family: 'Segoe UI', Arial, sans-serif;
             overscroll-behavior: none;
             -webkit-user-select: none;
             user-select: none;
+            color: var(--text-color);
+            padding: 10px;
         }
+
         h1 {
-            color: #0277bd;
+            color: var(--primary-color);
             margin: 20px 0;
-            font-size: 2em;
+            font-size: clamp(1.5em, 5vw, 2em);
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            text-align: center;
         }
+
         .controls {
             margin-bottom: 15px;
             display: flex;
-            gap: 10px;
             flex-wrap: wrap;
+            gap: 10px;
             justify-content: center;
             align-items: center;
+            width: 100%;
+            max-width: 1200px;
         }
+
         select, button, input[type="range"], input[type="file"], input[type="checkbox"] {
-            padding: 8px 12px;
-            font-size: 14px;
-            border: 1px solid #0288d1;
+            padding: clamp(6px, 1.5vw, 12px) clamp(8px, 2vw, 12px);
+            font-size: clamp(12px, 3vw, 14px);
+            border: 1px solid var(--primary-color);
             border-radius: 4px;
             background: #fff;
             cursor: pointer;
             transition: background-color 0.2s;
+            flex: 1 1 auto;
+            min-width: 80px;
         }
+
         button:hover, select:hover, input[type="range"]:hover, input[type="file"]:hover, input[type="checkbox"]:hover {
-            background-color: #e1f5fe;
+            background-color: var(--secondary-color);
+            color: #fff;
         }
+
         button:active {
-            background-color: #81d4fa;
+            background-color: var(--primary-color);
         }
+
         button.recording {
             background-color: #ff5252;
             color: #fff;
             animation: pulse 1s infinite;
         }
+
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.05); }
             100% { transform: scale(1); }
         }
+
         .keyboard-container {
             overflow-x: auto;
-            max-width: 95vw;
+            width: 95vw;
+            max-width: 1200px;
             padding: 10px;
             background: rgba(255, 255, 255, 0.8);
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
+
         .keyboard {
             display: flex;
             flex-wrap: nowrap;
             -webkit-overflow-scrolling: touch;
+            width: max-content;
         }
+
         .key {
-            width: 40px;
-            height: 180px;
+            width: clamp(20px, 3vw, 40px);
+            height: clamp(100px, 20vw, 180px);
             border: 1px solid #555;
             border-radius: 4px;
-            background-color: #fff;
+            background-color: var(--key-white);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 0;
+            padding: clamp(5px, 1vw, 10px) 0;
             cursor: pointer;
             transition: background-color 0.1s, transform 0.05s;
             position: relative;
             flex-shrink: 0;
             touch-action: none;
-            font-size: 12px;
-            color: #333;
+            font-size: clamp(8px, 2vw, 12px);
+            color: var(--text-color);
         }
+
         .key.black {
-            width: 25px;
-            height: 100px;
-            background-color: #222;
+            width: clamp(12px, 1.8vw, 25px);
+            height: clamp(60px, 12vw, 100px);
+            background-color: var(--key-black);
             color: #fff;
-            margin-left: -12.5px;
-            margin-right: -12.5px;
+            margin-left: calc(-1 * clamp(6px, 0.9vw, 12.5px));
+            margin-right: calc(-1 * clamp(6px, 0.9vw, 12.5px));
             z-index: 1;
         }
+
         .key.active {
-            background-color: #81d4fa;
+            background-color: var(--secondary-color);
             transform: scale(0.95);
         }
+
         .key.black.active {
-            background-color: #0288d1;
+            background-color: var(--primary-color);
         }
+
         .key .key-label {
-            font-size: 10px;
+            font-size: clamp(6px, 1.5vw, 10px);
             color: #666;
             margin-top: 5px;
         }
+
         .key.black .key-label {
             color: #ccc;
         }
+
         footer {
             position: fixed;
             bottom: 10px;
-            color: #555;
-            font-size: 14px;
+            color: var(--text-color);
+            font-size: clamp(10px, 2.5vw, 14px);
             text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
         }
-        @media (max-width: 600px) {
+
+        /* 平板 */
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            select, button, input[type="range"], input[type="checkbox"] {
+                width: 100%;
+                max-width: none;
+            }
             .key {
-                width: 30px;
-                height: 120px;
-                font-size: 10px;
+                width: clamp(15px, 4vw, 30px);
+                height: clamp(80px, 18vw, 120px);
             }
             .key.black {
-                width: 18px;
-                height: 70px;
-                margin-left: -9px;
-                margin-right: -9px;
+                width: clamp(9px, 2.4vw, 18px);
+                height: clamp(48px, 10vw, 70px);
+                margin-left: calc(-1 * clamp(4.5px, 1.2vw, 9px));
+                margin-right: calc(-1 * clamp(4.5px, 1.2vw, 9px));
+            }
+        }
+
+        /* 手機 */
+        @media (max-width: 480px) {
+            h1 {
+                font-size: clamp(1em, 4vw, 1.5em);
+            }
+            .controls {
+                gap: 5px;
+            }
+            select, button, input[type="range"], input[type="checkbox"] {
+                padding: clamp(4px, 1vw, 6px) clamp(6px, 1.5vw, 10px);
+                font-size: clamp(10px, 2.5vw, 12px);
+            }
+            .key {
+                width: clamp(12px, 5vw, 20px);
+                height: clamp(60px, 15vw, 100px);
+            }
+            .key.black {
+                width: clamp(7px, 3vw, 12px);
+                height: clamp(36px, 9vw, 60px);
+                margin-left: calc(-1 * clamp(3.5px, 1.5vw, 6px));
+                margin-right: calc(-1 * clamp(3.5px, 1.5vw, 6px));
             }
             .key .key-label {
-                font-size: 8px;
-            }
-            h1 {
-                font-size: 1.5em;
-            }
-            select, button, input[type="range"], input[type="file"], input[type="checkbox"] {
-                font-size: 12px;
-                padding: 6px 10px;
+                font-size: clamp(5px, 1.2vw, 8px);
             }
         }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron&family=Press+Start+2P&family=Roboto&family=Georgia&family=Comic+Sans+MS&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="cyberpunk">
     <h1>援想琴電子琴彈奏系統</h1>
     <div class="controls">
+        <select id="theme">
+            <option value="cyberpunk">賽博龐克</option>
+            <option value="classic-retro">經典復古</option>
+            <option value="modern-mono">現代黑白</option>
+            <option value="bright-orange">明亮橙黃</option>
+            <option value="pastoral-forest">田園森林</option>
+            <option value="rainbow-gradient">彩虹漸層</option>
+            <option value="pink-bubble">粉紅泡泡</option>
+        </select>
         <select id="waveform">
             <option value="sine">正弦波</option>
             <option value="triangle">三角波</option>
@@ -161,7 +324,8 @@
         <button id="record">開始錄音</button>
         <button id="stop">停止錄音</button>
         <button id="playback">播放錄音</button>
-        <button id="download">下載錄音</button>
+        <button id="download">下載錄音 (JSON)</button>
+        <button id="downloadMidi">下載MIDI</button>
         <input type="file" id="upload" accept=".json" style="display: none;">
         <button id="uploadBtn">上傳錄音</button>
         <input type="file" id="midiUpload" accept=".mid" style="display: none;">
@@ -199,7 +363,6 @@
             'n': 'E6', 'm': 'F6', ',': 'F#6', '.': 'G6', '/': 'G#6'
         };
 
-        // 生成琴鍵並顯示鍵盤提示
         const keyboard = document.getElementById('keyboard');
         const noteOrder = Object.keys(notes);
         noteOrder.forEach(note => {
@@ -221,16 +384,14 @@
         let useDelay = false;
         let useReverb = false;
 
-        // 音效節點
         const delayNode = audioContext.createDelay();
-        delayNode.delayTime.value = 0.3; // 延遲 0.3 秒
+        delayNode.delayTime.value = 0.3;
         const delayGain = audioContext.createGain();
-        delayGain.gain.value = 0.5; // 延遲音量
+        delayGain.gain.value = 0.5;
         const reverbNode = audioContext.createConvolver();
         const reverbGain = audioContext.createGain();
-        reverbGain.gain.value = 0.3; // 混響音量
+        reverbGain.gain.value = 0.3;
 
-        // 生成簡單的混響脈衝響應
         const reverbBuffer = audioContext.createBuffer(2, audioContext.sampleRate * 2, audioContext.sampleRate);
         for (let channel = 0; channel < 2; channel++) {
             const data = reverbBuffer.getChannelData(channel);
@@ -298,13 +459,16 @@
             }
         }
 
-        // 音色選擇
+        const themeSelect = document.getElementById('theme');
+        themeSelect.addEventListener('change', (e) => {
+            document.body.className = e.target.value;
+        });
+
         const waveformSelect = document.getElementById('waveform');
         waveformSelect.addEventListener('change', (e) => {
             currentWaveform = e.target.value;
         });
 
-        // 音量控制
         const volumeSlider = document.getElementById('volume');
         volumeSlider.addEventListener('input', (e) => {
             masterVolume = parseFloat(e.target.value);
@@ -313,7 +477,6 @@
             }
         });
 
-        // 音效控制
         const delayCheckbox = document.getElementById('delay');
         delayCheckbox.addEventListener('change', (e) => {
             useDelay = e.target.checked;
@@ -324,11 +487,11 @@
             useReverb = e.target.checked;
         });
 
-        // 錄音控制
         const recordBtn = document.getElementById('record');
         const stopBtn = document.getElementById('stop');
         const playbackBtn = document.getElementById('playback');
         const downloadBtn = document.getElementById('download');
+        const downloadMidiBtn = document.getElementById('downloadMidi');
         const uploadBtn = document.getElementById('uploadBtn');
         const uploadInput = document.getElementById('upload');
         const midiUploadBtn = document.getElementById('midiUploadBtn');
@@ -344,6 +507,7 @@
             stopBtn.disabled = false;
             playbackBtn.disabled = true;
             downloadBtn.disabled = true;
+            downloadMidiBtn.disabled = true;
             uploadBtn.disabled = true;
             midiUploadBtn.disabled = true;
             shareBtn.disabled = true;
@@ -356,6 +520,7 @@
             stopBtn.disabled = true;
             playbackBtn.disabled = false;
             downloadBtn.disabled = false;
+            downloadMidiBtn.disabled = false;
             uploadBtn.disabled = false;
             midiUploadBtn.disabled = false;
             shareBtn.disabled = false;
@@ -367,6 +532,7 @@
             stopBtn.disabled = true;
             playbackBtn.disabled = true;
             downloadBtn.disabled = true;
+            downloadMidiBtn.disabled = true;
             uploadBtn.disabled = true;
             midiUploadBtn.disabled = true;
             shareBtn.disabled = true;
@@ -406,6 +572,7 @@
                 stopBtn.disabled = false;
                 playbackBtn.disabled = false;
                 downloadBtn.disabled = false;
+                downloadMidiBtn.disabled = false;
                 uploadBtn.disabled = false;
                 midiUploadBtn.disabled = false;
                 shareBtn.disabled = false;
@@ -423,6 +590,90 @@
             document.body.removeChild(a);
         });
 
+        function generateMidi(notesData) {
+            const ticksPerBeat = 480;
+            const midi = new Uint8Array(1024 * 1024);
+            let offset = 0;
+
+            const header = [
+                0x4D, 0x54, 0x68, 0x64,
+                0x00, 0x00, 0x00, 0x06,
+                0x00, 0x00,
+                0x00, 0x01,
+                0x01, 0xE0
+            ];
+            header.forEach(byte => midi[offset++] = byte);
+
+            const trackHeader = [0x4D, 0x54, 0x72, 0x6B];
+            trackHeader.forEach(byte => midi[offset++] = byte);
+            const trackLengthPos = offset;
+            offset += 4;
+
+            let lastTime = 0;
+            notesData.forEach(note => {
+                const midiNote = Object.entries(notes).find(([_, freq]) => 
+                    Math.abs(freq - note.frequency) < 1)?.[0];
+                if (!midiNote) return;
+                const noteNumber = Math.round(12 * Math.log2(note.frequency / 440) + 69);
+                const startTicks = Math.round(note.startTime * ticksPerBeat * 2);
+                const durationTicks = note.duration ? Math.round(note.duration * ticksPerBeat * 2) : 120;
+
+                const deltaStart = startTicks - lastTime;
+                offset = writeVariableLength(midi, offset, deltaStart);
+                midi[offset++] = 0x90;
+                midi[offset++] = noteNumber;
+                midi[offset++] = 0x7F;
+
+                offset = writeVariableLength(midi, offset, durationTicks);
+                midi[offset++] = 0x80;
+                midi[offset++] = noteNumber;
+                midi[offset++] = 0x00;
+
+                lastTime = startTicks + durationTicks;
+            });
+
+            offset = writeVariableLength(midi, offset, 0);
+            midi[offset++] = 0xFF;
+            midi[offset++] = 0x2F;
+            midi[offset++] = 0x00;
+
+            const trackLength = offset - trackLengthPos - 4;
+            midi[trackLengthPos] = (trackLength >> 24) & 0xFF;
+            midi[trackLengthPos + 1] = (trackLength >> 16) & 0xFF;
+            midi[trackLengthPos + 2] = (trackLength >> 8) & 0xFF;
+            midi[trackLengthPos + 3] = trackLength & 0xFF;
+
+            return midi.slice(0, offset);
+        }
+
+        function writeVariableLength(midi, offset, value) {
+            let buffer = value & 0x7F;
+            while (value >>= 7) {
+                buffer <<= 8;
+                buffer |= ((value & 0x7F) | 0x80);
+            }
+            while (true) {
+                midi[offset++] = buffer & 0xFF;
+                if (buffer & 0x80) buffer >>= 8;
+                else break;
+            }
+            return offset;
+        }
+
+        downloadMidiBtn.addEventListener('click', () => {
+            if (recordedNotes.length === 0) return;
+            const midiData = generateMidi(recordedNotes);
+            const blob = new Blob([midiData], { type: 'audio/midi' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `recording_${new Date().toISOString().replace(/[:.]/g, '-')}.mid`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
         uploadBtn.addEventListener('click', () => uploadInput.click());
         uploadInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
@@ -432,6 +683,7 @@
                 recordedNotes = JSON.parse(event.target.result);
                 playbackBtn.disabled = false;
                 downloadBtn.disabled = false;
+                downloadMidiBtn.disabled = false;
                 shareBtn.disabled = false;
                 alert('錄音已載入，可點擊「播放錄音」試聽！');
             };
@@ -439,7 +691,6 @@
             uploadInput.value = '';
         });
 
-        // MIDI 支持（簡化版）
         midiUploadBtn.addEventListener('click', () => midiUploadInput.click());
         midiUploadInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
@@ -451,6 +702,7 @@
                 recordedNotes = parseMidi(midiData);
                 playbackBtn.disabled = false;
                 downloadBtn.disabled = false;
+                downloadMidiBtn.disabled = false;
                 shareBtn.disabled = false;
                 alert('MIDI 已載入，可點擊「播放錄音」試聽！');
             };
@@ -459,25 +711,23 @@
         });
 
         function parseMidi(midiData) {
-            // 簡化 MIDI 解析，只處理 Note On/Off 事件（單軌）
             const notesList = [];
             let currentTime = 0;
-            let i = 14; // 跳過 MIDI 頭部（假設簡單格式）
+            let i = 14;
             while (i < midiData.length) {
-                // 解析 delta time（簡化為固定速度）
                 const deltaTime = midiData[i] < 128 ? midiData[i] : midiData[i] * 256 + midiData[i + 1];
-                currentTime += deltaTime / 1000; // 假設 1000 ticks 每秒
+                currentTime += deltaTime / 1000;
                 i += midiData[i] < 128 ? 1 : 2;
 
                 const eventType = midiData[i] & 0xF0;
-                if (eventType === 0x90) { // Note On
+                if (eventType === 0x90) {
                     const noteNumber = midiData[i + 1];
-                    const frequency = 440 * Math.pow(2, (noteNumber - 69) / 12); // MIDI 轉頻率
+                    const frequency = 440 * Math.pow(2, (noteNumber - 69) / 12);
                     const noteName = Object.entries(notes).reduce((prev, [n, f]) => 
                         Math.abs(f - frequency) < Math.abs(notes[prev] - frequency) ? n : prev, 'C4');
                     notesList.push({ note: noteName, frequency, startTime: currentTime, waveform: currentWaveform });
                     i += 3;
-                } else if (eventType === 0x80) { // Note Off
+                } else if (eventType === 0x80) {
                     const noteNumber = midiData[i + 1];
                     const frequency = 440 * Math.pow(2, (noteNumber - 69) / 12);
                     const noteName = Object.entries(notes).reduce((prev, [n, f]) => 
@@ -486,13 +736,12 @@
                     if (lastNote) lastNote.duration = currentTime - lastNote.startTime;
                     i += 3;
                 } else {
-                    i += 1; // 跳過其他事件
+                    i += 1;
                 }
             }
             return notesList;
         }
 
-        // 分享功能
         shareBtn.addEventListener('click', () => {
             if (recordedNotes.length === 0) return;
             const jsonStr = JSON.stringify(recordedNotes);
@@ -503,7 +752,6 @@
             });
         });
 
-        // 載入分享的錄音
         const urlParams = new URLSearchParams(window.location.search);
         const recordingParam = urlParams.get('recording');
         if (recordingParam) {
@@ -511,6 +759,7 @@
                 recordedNotes = JSON.parse(atob(recordingParam));
                 playbackBtn.disabled = false;
                 downloadBtn.disabled = false;
+                downloadMidiBtn.disabled = false;
                 shareBtn.disabled = false;
                 alert('已從 URL 載入錄音，可點擊「播放錄音」試聽！');
             } catch (e) {
@@ -518,7 +767,6 @@
             }
         }
 
-        // 事件處理器
         const keys = document.querySelectorAll('.key');
         keys.forEach(key => {
             key.addEventListener('mousedown', () => {
@@ -623,6 +871,7 @@
             stopBtn.disabled = true;
             playbackBtn.disabled = true;
             downloadBtn.disabled = true;
+            downloadMidiBtn.disabled = true;
             shareBtn.disabled = true;
         });
     </script>
