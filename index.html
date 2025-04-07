@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="援想琴電子琴彈奏系統 - 線上彈奏電子琴，支援多鍵、觸控滑音、音色選擇、錄音與MIDI">
+    <title>援想琴電子琴彈奏系統</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            overscroll-behavior: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        h1 {
+            color: #0277bd;
+            margin: 20px 0;
+            font-size: 2em;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        .controls {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+        select, button, input[type="range"], input[type="file"], input[type="checkbox"] {
+            padding: 8px 12px;
+            font-size: 14px;
+            border: 1px solid #0288d1;
+            border-radius: 4px;
+            background: #fff;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover, select:hover, input[type="range"]:hover, input[type="file"]:hover, input[type="checkbox"]:hover {
+            background-color: #e1f5fe;
+        }
+        button:active {
+            background-color: #81d4fa;
+        }
+        button.recording {
+            background-color: #ff5252;
+            color: #fff;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .keyboard-container {
+            overflow-x: auto;
+            max-width: 95vw;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .keyboard {
+            display: flex;
+            flex-wrap: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+        .key {
+            width: 40px;
+            height: 180px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            background-color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            cursor: pointer;
+            transition: background-color 0.1s, transform 0.05s;
+            position: relative;
+            flex-shrink: 0;
+            touch-action: none;
+            font-size: 12px;
+            color: #333;
+        }
+        .key.black {
+            width: 25px;
+            height: 100px;
+            background-color: #222;
+            color: #fff;
+            margin-left: -12.5px;
+            margin-right: -12.5px;
+            z-index: 1;
+        }
+        .key.active {
+            background-color: #81d4fa;
+            transform: scale(0.95);
+        }
+        .key.black.active {
+            background-color: #0288d1;
+        }
+        .key .key-label {
+            font-size: 10px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .key.black .key-label {
+            color: #ccc;
+        }
+        footer {
+            position: fixed;
+            bottom: 10px;
+            color: #555;
+            font-size: 14px;
+            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
+        }
+        @media (max-width: 600px) {
+            .key {
+                width: 30px;
+                height: 120px;
+                font-size: 10px;
+            }
+            .key.black {
+                width: 18px;
+                height: 70px;
+                margin-left: -9px;
+                margin-right: -9px;
+            }
+            .key .key-label {
+                font-size: 8px;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+            select, button, input[type="range"], input[type="file"], input[type="checkbox"] {
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>援想琴電子琴彈奏系統</h1>
+    <div class="controls">
+        <select id="waveform">
+            <option value="sine">正弦波</option>
+            <option value="triangle">三角波</option>
+            <option value="sawtooth">鋸齒波</option>
+            <option value="square">方波</option>
+        </select>
+        <input type="range" id="volume" min="0" max="1" step="0.01" value="0.5" title="音量">
+        <label><input type="checkbox" id="delay"> 延遲</label>
+        <label><input type="checkbox" id="reverb"> 混響</label>
+        <button id="record">開始錄音</button>
+        <button id="stop">停止錄音</button>
+        <button id="playback">播放錄音</button>
+        <button id="download">下載錄音</button>
+        <input type="file" id="upload" accept=".json" style="display: none;">
+        <button id="uploadBtn">上傳錄音</button>
+        <input type="file" id="midiUpload" accept=".mid" style="display: none;">
+        <button id="midiUploadBtn">導入MIDI</button>
+        <button id="share">分享錄音</button>
+    </div>
+    <div class="keyboard-container">
+        <div class="keyboard" id="keyboard"></div>
+    </div>
+    <footer>Copyright © Liyuchiutiger Gongminshen</footer>
+
+    <script>
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const notes = {
+            'C3': 130.81, 'C#3': 138.59, 'D3': 146.83, 'D#3': 155.56, 'E3': 164.81,
+            'F3': 174.61, 'F#3': 185.00, 'G3': 196.00, 'G#3': 207.65, 'A3': 220.00,
+            'A#3': 233.08, 'B3': 246.94, 'C4': 261.63, 'C#4': 277.18, 'D4': 293.66,
+            'D#4': 311.13, 'E4': 329.63, 'F4': 349.23, 'F#4': 369.99, 'G4': 392.00,
+            'G#4': 415.30, 'A4': 440.00, 'A#4': 466.16, 'B4': 493.88, 'C5': 523.25,
+            'C#5': 554.37, 'D5': 587.33, 'D#5': 622.25, 'E5': 659.25, 'F5': 698.46,
+            'F#5': 739.99, 'G5': 783.99, 'G#5': 830.61, 'A5': 880.00, 'A#5': 932.33,
+            'B5': 987.77, 'C6': 1046.50, 'C#6': 1108.73, 'D6': 1174.66, 'D#6': 1244.51,
+            'E6': 1318.51, 'F6': 1396.91, 'F#6': 1479.98, 'G6': 1567.98, 'G#6': 1661.22,
+            'A6': 1760.00, 'A#6': 1864.66, 'B6': 1975.53, 'C7': 2093.00
+        };
+        const keyMap = {
+            'z': 'C3', 's': 'C#3', 'x': 'D3', 'd': 'D#3', 'c': 'E3',
+            'v': 'F3', 'g': 'F#3', 'b': 'G3', 'h': 'G#3', 'n': 'A3',
+            'j': 'A#3', 'm': 'B3', 'q': 'C4', '2': 'C#4', 'w': 'D4',
+            '3': 'D#4', 'e': 'E4', 'r': 'F4', '5': 'F#4', 't': 'G4',
+            '6': 'G#4', 'y': 'A4', '7': 'A#4', 'u': 'B4', 'i': 'C5',
+            '9': 'C#5', 'o': 'D5', '0': 'D#5', 'p': 'E5', '[': 'F5',
+            ']': 'F#5', 'a': 'G5', 'k': 'G#5', 'l': 'A5', ';': 'A#5',
+            "'": 'B5', 'f': 'C6', 'c': 'C#6', 'v': 'D6', 'b': 'D#6',
+            'n': 'E6', 'm': 'F6', ',': 'F#6', '.': 'G6', '/': 'G#6'
+        };
+
+        // 生成琴鍵並顯示鍵盤提示
+        const keyboard = document.getElementById('keyboard');
+        const noteOrder = Object.keys(notes);
+        noteOrder.forEach(note => {
+            const key = document.createElement('div');
+            key.className = 'key' + (note.includes('#') ? ' black' : '');
+            key.dataset.note = note;
+            key.innerHTML = `${note}<span class="key-label">${
+                Object.entries(keyMap).find(([_, n]) => n === note)?.[0] || ''
+            }</span>`;
+            keyboard.appendChild(key);
+        });
+
+        const activeNotes = new Map();
+        let recording = false;
+        let recordedNotes = [];
+        let startTime = null;
+        let currentWaveform = 'sine';
+        let masterVolume = 0.5;
+        let useDelay = false;
+        let useReverb = false;
+
+        // 音效節點
+        const delayNode = audioContext.createDelay();
+        delayNode.delayTime.value = 0.3; // 延遲 0.3 秒
+        const delayGain = audioContext.createGain();
+        delayGain.gain.value = 0.5; // 延遲音量
+        const reverbNode = audioContext.createConvolver();
+        const reverbGain = audioContext.createGain();
+        reverbGain.gain.value = 0.3; // 混響音量
+
+        // 生成簡單的混響脈衝響應
+        const reverbBuffer = audioContext.createBuffer(2, audioContext.sampleRate * 2, audioContext.sampleRate);
+        for (let channel = 0; channel < 2; channel++) {
+            const data = reverbBuffer.getChannelData(channel);
+            for (let i = 0; i < data.length; i++) {
+                data[i] = (Math.random() * 2 - 1) * Math.exp(-i / audioContext.sampleRate);
+            }
+        }
+        reverbNode.buffer = reverbBuffer;
+
+        function getGainForFrequency(frequency) {
+            const maxGain = 0.25;
+            const minGain = 0.15;
+            const threshold = 300;
+            const baseGain = frequency < threshold 
+                ? maxGain - ((maxGain - minGain) * (frequency - 130.81) / (threshold - 130.81)) 
+                : minGain;
+            return baseGain * masterVolume;
+        }
+
+        function playNote(frequency, note, waveform = currentWaveform) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            oscillator.type = waveform;
+            oscillator.frequency.value = frequency;
+            gainNode.gain.setValueAtTime(getGainForFrequency(frequency), audioContext.currentTime);
+
+            oscillator.connect(gainNode);
+            if (useDelay) {
+                gainNode.connect(delayNode);
+                delayNode.connect(delayGain);
+                delayGain.connect(audioContext.destination);
+            }
+            if (useReverb) {
+                gainNode.connect(reverbNode);
+                reverbNode.connect(reverbGain);
+                reverbGain.connect(audioContext.destination);
+            }
+            gainNode.connect(audioContext.destination);
+            oscillator.start();
+            activeNotes.set(note, { oscillator, gainNode });
+
+            if (recording) {
+                recordedNotes.push({
+                    note,
+                    frequency,
+                    startTime: audioContext.currentTime - startTime,
+                    waveform,
+                    delay: useDelay,
+                    reverb: useReverb
+                });
+            }
+        }
+
+        function stopNote(note) {
+            const audio = activeNotes.get(note);
+            if (audio) {
+                audio.gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+                audio.oscillator.stop(audioContext.currentTime + 0.2);
+                activeNotes.delete(note);
+
+                if (recording) {
+                    const lastNote = recordedNotes.findLast(n => n.note === note);
+                    if (lastNote) lastNote.duration = audioContext.currentTime - startTime - lastNote.startTime;
+                }
+            }
+        }
+
+        // 音色選擇
+        const waveformSelect = document.getElementById('waveform');
+        waveformSelect.addEventListener('change', (e) => {
+            currentWaveform = e.target.value;
+        });
+
+        // 音量控制
+        const volumeSlider = document.getElementById('volume');
+        volumeSlider.addEventListener('input', (e) => {
+            masterVolume = parseFloat(e.target.value);
+            for (let [note, audio] of activeNotes) {
+                audio.gainNode.gain.setValueAtTime(getGainForFrequency(notes[note]), audioContext.currentTime);
+            }
+        });
+
+        // 音效控制
+        const delayCheckbox = document.getElementById('delay');
+        delayCheckbox.addEventListener('change', (e) => {
+            useDelay = e.target.checked;
+        });
+
+        const reverbCheckbox = document.getElementById('reverb');
+        reverbCheckbox.addEventListener('change', (e) => {
+            useReverb = e.target.checked;
+        });
+
+        // 錄音控制
+        const recordBtn = document.getElementById('record');
+        const stopBtn = document.getElementById('stop');
+        const playbackBtn = document.getElementById('playback');
+        const downloadBtn = document.getElementById('download');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const uploadInput = document.getElementById('upload');
+        const midiUploadBtn = document.getElementById('midiUploadBtn');
+        const midiUploadInput = document.getElementById('midiUpload');
+        const shareBtn = document.getElementById('share');
+
+        recordBtn.addEventListener('click', () => {
+            recording = true;
+            recordedNotes = [];
+            startTime = audioContext.currentTime;
+            recordBtn.classList.add('recording');
+            recordBtn.disabled = true;
+            stopBtn.disabled = false;
+            playbackBtn.disabled = true;
+            downloadBtn.disabled = true;
+            uploadBtn.disabled = true;
+            midiUploadBtn.disabled = true;
+            shareBtn.disabled = true;
+        });
+
+        stopBtn.addEventListener('click', () => {
+            recording = false;
+            recordBtn.classList.remove('recording');
+            recordBtn.disabled = false;
+            stopBtn.disabled = true;
+            playbackBtn.disabled = false;
+            downloadBtn.disabled = false;
+            uploadBtn.disabled = false;
+            midiUploadBtn.disabled = false;
+            shareBtn.disabled = false;
+        });
+
+        playbackBtn.addEventListener('click', () => {
+            if (recordedNotes.length === 0) return;
+            recordBtn.disabled = true;
+            stopBtn.disabled = true;
+            playbackBtn.disabled = true;
+            downloadBtn.disabled = true;
+            uploadBtn.disabled = true;
+            midiUploadBtn.disabled = true;
+            shareBtn.disabled = true;
+
+            recordedNotes.forEach(({ note, frequency, startTime, duration, waveform, delay, reverb }) => {
+                setTimeout(() => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    oscillator.type = waveform;
+                    oscillator.frequency.value = frequency;
+                    gainNode.gain.setValueAtTime(getGainForFrequency(frequency), audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
+                    oscillator.connect(gainNode);
+                    if (delay) {
+                        gainNode.connect(delayNode);
+                        delayNode.connect(delayGain);
+                        delayGain.connect(audioContext.destination);
+                    }
+                    if (reverb) {
+                        gainNode.connect(reverbNode);
+                        reverbNode.connect(reverbGain);
+                        reverbGain.connect(audioContext.destination);
+                    }
+                    gainNode.connect(audioContext.destination);
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + duration);
+
+                    const key = document.querySelector(`[data-note="${note}"]`);
+                    key.classList.add('active');
+                    setTimeout(() => key.classList.remove('active'), duration * 1000);
+                }, startTime * 1000);
+            });
+
+            const totalDuration = Math.max(...recordedNotes.map(n => n.startTime + (n.duration || 0))) * 1000;
+            setTimeout(() => {
+                recordBtn.disabled = false;
+                stopBtn.disabled = false;
+                playbackBtn.disabled = false;
+                downloadBtn.disabled = false;
+                uploadBtn.disabled = false;
+                midiUploadBtn.disabled = false;
+                shareBtn.disabled = false;
+            }, totalDuration);
+        });
+
+        downloadBtn.addEventListener('click', () => {
+            if (recordedNotes.length === 0) return;
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(recordedNotes));
+            const a = document.createElement('a');
+            a.setAttribute('href', dataStr);
+            a.setAttribute('download', `recording_${new Date().toISOString().replace(/[:.]/g, '-')}.json`);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        });
+
+        uploadBtn.addEventListener('click', () => uploadInput.click());
+        uploadInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                recordedNotes = JSON.parse(event.target.result);
+                playbackBtn.disabled = false;
+                downloadBtn.disabled = false;
+                shareBtn.disabled = false;
+                alert('錄音已載入，可點擊「播放錄音」試聽！');
+            };
+            reader.readAsText(file);
+            uploadInput.value = '';
+        });
+
+        // MIDI 支持（簡化版）
+        midiUploadBtn.addEventListener('click', () => midiUploadInput.click());
+        midiUploadInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const arrayBuffer = event.target.result;
+                const midiData = new Uint8Array(arrayBuffer);
+                recordedNotes = parseMidi(midiData);
+                playbackBtn.disabled = false;
+                downloadBtn.disabled = false;
+                shareBtn.disabled = false;
+                alert('MIDI 已載入，可點擊「播放錄音」試聽！');
+            };
+            reader.readAsArrayBuffer(file);
+            midiUploadInput.value = '';
+        });
+
+        function parseMidi(midiData) {
+            // 簡化 MIDI 解析，只處理 Note On/Off 事件（單軌）
+            const notesList = [];
+            let currentTime = 0;
+            let i = 14; // 跳過 MIDI 頭部（假設簡單格式）
+            while (i < midiData.length) {
+                // 解析 delta time（簡化為固定速度）
+                const deltaTime = midiData[i] < 128 ? midiData[i] : midiData[i] * 256 + midiData[i + 1];
+                currentTime += deltaTime / 1000; // 假設 1000 ticks 每秒
+                i += midiData[i] < 128 ? 1 : 2;
+
+                const eventType = midiData[i] & 0xF0;
+                if (eventType === 0x90) { // Note On
+                    const noteNumber = midiData[i + 1];
+                    const frequency = 440 * Math.pow(2, (noteNumber - 69) / 12); // MIDI 轉頻率
+                    const noteName = Object.entries(notes).reduce((prev, [n, f]) => 
+                        Math.abs(f - frequency) < Math.abs(notes[prev] - frequency) ? n : prev, 'C4');
+                    notesList.push({ note: noteName, frequency, startTime: currentTime, waveform: currentWaveform });
+                    i += 3;
+                } else if (eventType === 0x80) { // Note Off
+                    const noteNumber = midiData[i + 1];
+                    const frequency = 440 * Math.pow(2, (noteNumber - 69) / 12);
+                    const noteName = Object.entries(notes).reduce((prev, [n, f]) => 
+                        Math.abs(f - frequency) < Math.abs(notes[prev] - frequency) ? n : prev, 'C4');
+                    const lastNote = notesList.findLast(n => n.note === noteName && !n.duration);
+                    if (lastNote) lastNote.duration = currentTime - lastNote.startTime;
+                    i += 3;
+                } else {
+                    i += 1; // 跳過其他事件
+                }
+            }
+            return notesList;
+        }
+
+        // 分享功能
+        shareBtn.addEventListener('click', () => {
+            if (recordedNotes.length === 0) return;
+            const jsonStr = JSON.stringify(recordedNotes);
+            const base64 = btoa(jsonStr);
+            const shareUrl = `${window.location.origin}${window.location.pathname}?recording=${base64}`;
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                alert('分享鏈接已複製到剪貼板：\n' + shareUrl);
+            });
+        });
+
+        // 載入分享的錄音
+        const urlParams = new URLSearchParams(window.location.search);
+        const recordingParam = urlParams.get('recording');
+        if (recordingParam) {
+            try {
+                recordedNotes = JSON.parse(atob(recordingParam));
+                playbackBtn.disabled = false;
+                downloadBtn.disabled = false;
+                shareBtn.disabled = false;
+                alert('已從 URL 載入錄音，可點擊「播放錄音」試聽！');
+            } catch (e) {
+                console.error('無效的分享錄音數據', e);
+            }
+        }
+
+        // 事件處理器
+        const keys = document.querySelectorAll('.key');
+        keys.forEach(key => {
+            key.addEventListener('mousedown', () => {
+                const note = key.dataset.note;
+                if (!activeNotes.has(note)) {
+                    playNote(notes[note], note);
+                    key.classList.add('active');
+                }
+            });
+            key.addEventListener('mouseup', () => {
+                const note = key.dataset.note;
+                stopNote(note);
+                key.classList.remove('active');
+            });
+            key.addEventListener('mouseleave', () => {
+                const note = key.dataset.note;
+                if (activeNotes.has(note)) {
+                    stopNote(note);
+                    key.classList.remove('active');
+                }
+            });
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.repeat) return;
+            const note = keyMap[e.key.toLowerCase()];
+            if (note && !activeNotes.has(note)) {
+                playNote(notes[note], note);
+                document.querySelector(`[data-note="${note}"]`).classList.add('active');
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            const note = keyMap[e.key.toLowerCase()];
+            if (note) {
+                stopNote(note);
+                document.querySelector(`[data-note="${note}"]`).classList.remove('active');
+            }
+        });
+
+        keyboard.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            for (let touch of e.touches) {
+                const key = document.elementFromPoint(touch.clientX, touch.clientY);
+                if (key && key.classList.contains('key')) {
+                    const note = key.dataset.note;
+                    if (!activeNotes.has(note)) {
+                        playNote(notes[note], note);
+                        key.classList.add('active');
+                    }
+                }
+            }
+        }, { passive: false });
+
+        keyboard.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const touchedKeys = new Set();
+            for (let touch of e.touches) {
+                const key = document.elementFromPoint(touch.clientX, touch.clientY);
+                if (key && key.classList.contains('key')) {
+                    const note = key.dataset.note;
+                    touchedKeys.add(note);
+                    if (!activeNotes.has(note)) {
+                        playNote(notes[note], note);
+                        key.classList.add('active');
+                    }
+                }
+            }
+            for (let [note, _] of activeNotes) {
+                if (!touchedKeys.has(note)) {
+                    const keyElement = document.querySelector(`[data-note="${note}"]`);
+                    stopNote(note);
+                    keyElement.classList.remove('active');
+                }
+            }
+        }, { passive: false });
+
+        keyboard.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            const remainingTouches = new Set();
+            for (let touch of e.touches) {
+                const key = document.elementFromPoint(touch.clientX, touch.clientY);
+                if (key && key.classList.contains('key')) {
+                    remainingTouches.add(key.dataset.note);
+                }
+            }
+            for (let [note, _] of activeNotes) {
+                if (!remainingTouches.has(note)) {
+                    const keyElement = document.querySelector(`[data-note="${note}"]`);
+                    stopNote(note);
+                    keyElement.classList.remove('active');
+                }
+            }
+        }, { passive: false });
+
+        document.addEventListener('click', () => {
+            if (audioContext.state === 'suspended') audioContext.resume();
+        });
+
+        window.addEventListener('load', () => {
+            keyboard.scrollLeft = keyboard.scrollWidth / 4;
+            stopBtn.disabled = true;
+            playbackBtn.disabled = true;
+            downloadBtn.disabled = true;
+            shareBtn.disabled = true;
+        });
+    </script>
+</body>
+</html>
