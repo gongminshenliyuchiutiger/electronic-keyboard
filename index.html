@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="援想琴電子琴神彈奏系統 - 線上彈奏電子琴，支援多鍵、觸控滑音、音色選擇、錄音與MIDI">
     <title>援想琴電子琴神彈奏系統</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         :root {
             --primary-color: #0288d1;
@@ -39,7 +40,7 @@
             --key-black: #5c4033;
             --text-color: #5c4033;
             background: linear-gradient(135deg, var(--background-start), var(--background-end));
-            font-family: 'Press Start 2P', cursive;
+            font-family: 'Georgia', serif;
         }
 
         /* 現代黑白 */
@@ -83,15 +84,15 @@
 
         /* 彩虹漸層 */
         body.rainbow-gradient {
-            --primary-color: #ff0000;
+            --primary-color: #FFFFFF;
             --secondary-color: #00ff00;
             --background-start: #ff00ff;
             --background-end: #00ffff;
             --key-white: #ffffff;
             --key-black: #000000;
             --text-color: #ff00ff;
-            background: linear-gradient(135deg, #ff0000, #ff00ff, #00ff00, #00ffff);
-            font-family: 'Comic Sans MS', cursive;
+            background: linear-gradient(135deg, #ff0000, #ff00ff, #1E90FF, #00ffff);
+            font-family: 'Roboto', sans-serif;
         }
 
         /* 粉紅泡泡 */
@@ -135,26 +136,52 @@
             margin-bottom: 15px;
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 8px;
             justify-content: center;
             align-items: center;
             width: 100%;
             max-width: 1200px;
         }
 
-        select, button, input[type="range"], input[type="file"], input[type="checkbox"] {
-            padding: clamp(6px, 1.5vw, 12px) clamp(8px, 2vw, 12px);
-            font-size: clamp(12px, 3vw, 14px);
+        select, button, input[type="file"] {
+            padding: clamp(4px, 1vw, 8px) clamp(6px, 1.5vw, 10px);
+            font-size: clamp(10px, 2.5vw, 12px);
             border: 1px solid var(--primary-color);
             border-radius: 4px;
             background: #fff;
             cursor: pointer;
             transition: background-color 0.2s;
             flex: 1 1 auto;
-            min-width: 80px;
+            min-width: 60px;
         }
 
-        button:hover, select:hover, input[type="range"]:hover, input[type="file"]:hover, input[type="checkbox"]:hover {
+        .volume-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .volume-icon {
+            font-size: clamp(12px, 3vw, 16px);
+            color: var(--text-color);
+        }
+
+        input[type="range"] {
+            padding: clamp(4px, 1vw, 8px) 0;
+            font-size: clamp(10px, 2.5vw, 12px);
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 100px; /* 與其他控制項協調的寬度 */
+            vertical-align: middle;
+        }
+
+        button i {
+            margin-right: 4px;
+        }
+
+        button:hover, select:hover, input[type="range"]:hover, input[type="file"]:hover {
             background-color: var(--secondary-color);
             color: #fff;
         }
@@ -167,6 +194,11 @@
             background-color: #ff5252;
             color: #fff;
             animation: pulse 1s infinite;
+        }
+
+        button.active {
+            background-color: var(--primary-color);
+            color: #fff;
         }
 
         @keyframes pulse {
@@ -255,9 +287,13 @@
                 flex-direction: column;
                 align-items: stretch;
             }
-            select, button, input[type="range"], input[type="checkbox"] {
+            select, button, input[type="range"] {
                 width: 100%;
                 max-width: none;
+            }
+            .volume-group {
+                width: 100%;
+                justify-content: center;
             }
             .key {
                 width: clamp(15px, 4vw, 30px);
@@ -279,9 +315,9 @@
             .controls {
                 gap: 5px;
             }
-            select, button, input[type="range"], input[type="checkbox"] {
-                padding: clamp(4px, 1vw, 6px) clamp(6px, 1.5vw, 10px);
-                font-size: clamp(10px, 2.5vw, 12px);
+            select, button, input[type="range"] {
+                padding: clamp(3px, 0.8vw, 6px) clamp(5px, 1.2vw, 8px);
+                font-size: clamp(9px, 2vw, 11px);
             }
             .key {
                 width: clamp(12px, 5vw, 20px);
@@ -318,19 +354,19 @@
             <option value="sawtooth">鋸齒波</option>
             <option value="square">方波</option>
         </select>
-        <input type="range" id="volume" min="0" max="1" step="0.01" value="0.5" title="音量">
-        <label><input type="checkbox" id="delay"> 延遲</label>
-        <label><input type="checkbox" id="reverb"> 混響</label>
-        <button id="record">開始錄音</button>
-        <button id="stop">停止錄音</button>
-        <button id="playback">播放錄音</button>
-        <button id="download">下載錄音 (JSON)</button>
-        <button id="downloadMidi">下載MIDI</button>
+        <div class="volume-group">
+            <i class="fas fa-volume-up volume-icon"></i>
+            <input type="range" id="volume" min="0" max="1" step="0.01" value="0.5" title="音量">
+        </div>
+        <button id="delay"><i class="fas fa-clock"></i> 延遲</button>
+        <button id="reverb"><i class="fas fa-wave-square"></i> 混響</button>
+        <button id="record"><i class="fas fa-microphone"></i></button>
+        <button id="stop"><i class="fas fa-stop"></i></button>
+        <button id="playback"><i class="fas fa-play"></i></button>
+        <button id="download"><i class="fas fa-download"></i> 下載JSON</button>
+        <button id="uploadBtn"><i class="fas fa-upload"></i> 上傳JSON</button>
         <input type="file" id="upload" accept=".json" style="display: none;">
-        <button id="uploadBtn">上傳錄音</button>
-        <input type="file" id="midiUpload" accept=".mid" style="display: none;">
-        <button id="midiUploadBtn">導入MIDI</button>
-        <button id="share">分享錄音</button>
+        <button id="downloadMidi"><i class="fas fa-file-audio"></i> 下載MIDI</button>
     </div>
     <div class="keyboard-container">
         <div class="keyboard" id="keyboard"></div>
@@ -354,13 +390,14 @@
         const keyMap = {
             'z': 'C3', 's': 'C#3', 'x': 'D3', 'd': 'D#3', 'c': 'E3',
             'v': 'F3', 'g': 'F#3', 'b': 'G3', 'h': 'G#3', 'n': 'A3',
-            'j': 'A#3', 'm': 'B3', 'q': 'C4', '2': 'C#4', 'w': 'D4',
-            '3': 'D#4', 'e': 'E4', 'r': 'F4', '5': 'F#4', 't': 'G4',
-            '6': 'G#4', 'y': 'A4', '7': 'A#4', 'u': 'B4', 'i': 'C5',
-            '9': 'C#5', 'o': 'D5', '0': 'D#5', 'p': 'E5', '[': 'F5',
-            ']': 'F#5', 'a': 'G5', 'k': 'G#5', 'l': 'A5', ';': 'A#5',
-            "'": 'B5', 'f': 'C6', 'c': 'C#6', 'v': 'D6', 'b': 'D#6',
-            'n': 'E6', 'm': 'F6', ',': 'F#6', '.': 'G6', '/': 'G#6'
+            'j': 'A#3', 'm': 'B3', ',': 'C4', 'l': 'C#4', '.': 'D4',
+            ';': 'D#4', '/': 'E4', 'q': 'F4', '2': 'F#4', 'w': 'G4',
+            '3': 'G#4', 'e': 'A4', '4': 'A#4', 'r': 'B4', 't': 'C5',
+            '6': 'C#5', 'y': 'D5', '7': 'D#5', 'u': 'E5', 'i': 'F5',
+            '9': 'F#5', 'o': 'G5', '0': 'G#5', 'p': 'A5', '[': 'A#5',
+            ']': 'B5', 'a': 'C6', 'k': 'C#6', 's': 'D6', 'd': 'D#6',
+            'f': 'E6', 'g': 'F6', 'h': 'F#6', 'j': 'G6', 'l': 'G#6',
+            ';': 'A6', "'": 'A#6', '\\': 'B6', '`': 'C7'
         };
 
         const keyboard = document.getElementById('keyboard');
@@ -477,14 +514,16 @@
             }
         });
 
-        const delayCheckbox = document.getElementById('delay');
-        delayCheckbox.addEventListener('change', (e) => {
-            useDelay = e.target.checked;
+        const delayBtn = document.getElementById('delay');
+        delayBtn.addEventListener('click', () => {
+            useDelay = !useDelay;
+            delayBtn.classList.toggle('active', useDelay);
         });
 
-        const reverbCheckbox = document.getElementById('reverb');
-        reverbCheckbox.addEventListener('change', (e) => {
-            useReverb = e.target.checked;
+        const reverbBtn = document.getElementById('reverb');
+        reverbBtn.addEventListener('click', () => {
+            useReverb = !useReverb;
+            reverbBtn.classList.toggle('active', useReverb);
         });
 
         const recordBtn = document.getElementById('record');
@@ -494,9 +533,6 @@
         const downloadMidiBtn = document.getElementById('downloadMidi');
         const uploadBtn = document.getElementById('uploadBtn');
         const uploadInput = document.getElementById('upload');
-        const midiUploadBtn = document.getElementById('midiUploadBtn');
-        const midiUploadInput = document.getElementById('midiUpload');
-        const shareBtn = document.getElementById('share');
 
         recordBtn.addEventListener('click', () => {
             recording = true;
@@ -509,8 +545,6 @@
             downloadBtn.disabled = true;
             downloadMidiBtn.disabled = true;
             uploadBtn.disabled = true;
-            midiUploadBtn.disabled = true;
-            shareBtn.disabled = true;
         });
 
         stopBtn.addEventListener('click', () => {
@@ -522,8 +556,6 @@
             downloadBtn.disabled = false;
             downloadMidiBtn.disabled = false;
             uploadBtn.disabled = false;
-            midiUploadBtn.disabled = false;
-            shareBtn.disabled = false;
         });
 
         playbackBtn.addEventListener('click', () => {
@@ -534,8 +566,6 @@
             downloadBtn.disabled = true;
             downloadMidiBtn.disabled = true;
             uploadBtn.disabled = true;
-            midiUploadBtn.disabled = true;
-            shareBtn.disabled = true;
 
             recordedNotes.forEach(({ note, frequency, startTime, duration, waveform, delay, reverb }) => {
                 setTimeout(() => {
@@ -574,8 +604,6 @@
                 downloadBtn.disabled = false;
                 downloadMidiBtn.disabled = false;
                 uploadBtn.disabled = false;
-                midiUploadBtn.disabled = false;
-                shareBtn.disabled = false;
             }, totalDuration);
         });
 
@@ -684,88 +712,11 @@
                 playbackBtn.disabled = false;
                 downloadBtn.disabled = false;
                 downloadMidiBtn.disabled = false;
-                shareBtn.disabled = false;
-                alert('錄音已載入，可點擊「播放錄音」試聽！');
+                alert('JSON已載入，可點擊「播放錄音」試聽！');
             };
             reader.readAsText(file);
             uploadInput.value = '';
         });
-
-        midiUploadBtn.addEventListener('click', () => midiUploadInput.click());
-        midiUploadInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const arrayBuffer = event.target.result;
-                const midiData = new Uint8Array(arrayBuffer);
-                recordedNotes = parseMidi(midiData);
-                playbackBtn.disabled = false;
-                downloadBtn.disabled = false;
-                downloadMidiBtn.disabled = false;
-                shareBtn.disabled = false;
-                alert('MIDI 已載入，可點擊「播放錄音」試聽！');
-            };
-            reader.readAsArrayBuffer(file);
-            midiUploadInput.value = '';
-        });
-
-        function parseMidi(midiData) {
-            const notesList = [];
-            let currentTime = 0;
-            let i = 14;
-            while (i < midiData.length) {
-                const deltaTime = midiData[i] < 128 ? midiData[i] : midiData[i] * 256 + midiData[i + 1];
-                currentTime += deltaTime / 1000;
-                i += midiData[i] < 128 ? 1 : 2;
-
-                const eventType = midiData[i] & 0xF0;
-                if (eventType === 0x90) {
-                    const noteNumber = midiData[i + 1];
-                    const frequency = 440 * Math.pow(2, (noteNumber - 69) / 12);
-                    const noteName = Object.entries(notes).reduce((prev, [n, f]) => 
-                        Math.abs(f - frequency) < Math.abs(notes[prev] - frequency) ? n : prev, 'C4');
-                    notesList.push({ note: noteName, frequency, startTime: currentTime, waveform: currentWaveform });
-                    i += 3;
-                } else if (eventType === 0x80) {
-                    const noteNumber = midiData[i + 1];
-                    const frequency = 440 * Math.pow(2, (noteNumber - 69) / 12);
-                    const noteName = Object.entries(notes).reduce((prev, [n, f]) => 
-                        Math.abs(f - frequency) < Math.abs(notes[prev] - frequency) ? n : prev, 'C4');
-                    const lastNote = notesList.findLast(n => n.note === noteName && !n.duration);
-                    if (lastNote) lastNote.duration = currentTime - lastNote.startTime;
-                    i += 3;
-                } else {
-                    i += 1;
-                }
-            }
-            return notesList;
-        }
-
-        shareBtn.addEventListener('click', () => {
-            if (recordedNotes.length === 0) return;
-            const jsonStr = JSON.stringify(recordedNotes);
-            const base64 = btoa(jsonStr);
-            const shareUrl = `${window.location.origin}${window.location.pathname}?recording=${base64}`;
-            navigator.clipboard.writeText(shareUrl).then(() => {
-                alert('分享鏈接已複製到剪貼板：\n' + shareUrl);
-            });
-        });
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const recordingParam = urlParams.get('recording');
-        if (recordingParam) {
-            try {
-                recordedNotes = JSON.parse(atob(recordingParam));
-                playbackBtn.disabled = false;
-                downloadBtn.disabled = false;
-                downloadMidiBtn.disabled = false;
-                shareBtn.disabled = false;
-                alert('已從 URL 載入錄音，可點擊「播放錄音」試聽！');
-            } catch (e) {
-                console.error('無效的分享錄音數據', e);
-            }
-        }
 
         const keys = document.querySelectorAll('.key');
         keys.forEach(key => {
@@ -872,7 +823,6 @@
             playbackBtn.disabled = true;
             downloadBtn.disabled = true;
             downloadMidiBtn.disabled = true;
-            shareBtn.disabled = true;
         });
     </script>
 </body>
